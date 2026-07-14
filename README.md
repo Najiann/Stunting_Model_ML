@@ -30,7 +30,7 @@ https://github.com/Najiann/Stunting_Prediction
 
 This project was developed as part of a personal learning and model improvement process based on the baseline project provided during the Dev Weekend program.
 
-During development, the author utilized **Artificial Intelligence (AI)** tools, including **ChatGPT**, as a **development assistant** to support activities such as:
+During development, the author utilized **Artificial Intelligence (AI)** tools, including **ChatGPT**, **Claude**, as a **development assistant** to support activities such as:
 
 - brainstorming solutions
 - understanding Machine Learning concepts
@@ -41,8 +41,6 @@ During development, the author utilized **Artificial Intelligence (AI)** tools, 
 - improving code structure and readability
 
 All data analysis, data leakage investigation, feature engineering, model selection, hyperparameter tuning, implementation, testing, evaluation, deployment, and final technical decisions were carried out, reviewed, and validated by the author.
-
-AI was used solely as a development assistant and learning aid, **not as a replacement for the developer**.
 
 ---
 
