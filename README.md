@@ -1,198 +1,258 @@
-Tentu, ini adalah file **`README.md`** versi final dan bersih yang sudah disesuaikan sepenuhnya dengan model perbaikan kamu (**No-Leakage / Tanpa `risk_score**`).
+# Stunting Prediction using Machine Learning
+### Improved Model with Data Leakage Mitigation
 
-Format di bawah ini dibuat sangat terstruktur, profesional, namun tetap ringkas dan langsung ke intinya agar juri kompetisi langsung paham letak inovasi proyekmu:
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-green)
+![Laravel](https://img.shields.io/badge/Laravel-12-red)
+![Scikit-Learn](https://img.shields.io/badge/scikit--learn-ML-orange)
 
-```markdown
-# 🧒 Stunting Prediction ML Project (No-Leakage Version)
+## Overview
 
-Proyek Machine Learning untuk memprediksi status stunting pada balita menggunakan data fisik, gizi, klinis, dan sosial-ekonomi. Proyek ini merupakan hasil **improvement (perbaikan kritis)** dari model awal (versi mentor) dengan membuang fitur kebocoran data (*data leakage*) agar model dapat digunakan dengan aman, jujur, dan akurat pada aplikasi nyata (*production-ready*).
+This project predicts stunting status in toddlers using Machine Learning based on anthropometric, nutritional, health, and socio-economic features.
+
+The project is an improved version of the baseline model by addressing a critical machine learning issue known as **data leakage**. The final model was retrained without the `risk_score` feature, resulting in a prediction pipeline that relies only on information realistically available during screening.
 
 ---
 
-## 📁 Struktur Folder
+## Model Improvements
 
+Compared to the baseline model, the following improvements were implemented:
 
-```
+| Aspect | Baseline | Improved Model |
+|---------|----------|----------------|
+| Data Leakage Analysis | Not investigated | Added formal leakage investigation |
+| `risk_score` Feature | Used for training | Removed after leakage analysis |
+| Number of Models | 3 algorithms | 6 algorithms |
+| Hyperparameter Tuning | Default parameters | GridSearchCV & RandomizedSearchCV |
+| Cross Validation | Train-test split only | Stratified 5-Fold Cross Validation |
+| Imbalanced Data Handling | `class_weight` only | `class_weight`, `scale_pos_weight`, and SMOTE |
+| Model Selection | Limited comparison | Final model selected after all experiments |
+| Deployment | Requires `risk_score` | No longer requires `risk_score` |
 
+---
+
+## Project Structure
+
+```text
 ML/
-├── stunting_ml_analysis_fixed_no_leakage.ipynb  # Notebook perbaikan, pelatihan ulang, dan evaluasi model (No-Leakage)
-├── main.py                                      # API backend FastAPI untuk serving prediksi ke Laravel
-├── stunting_model_fix_no_leakage.pkl            # File model ML terbaik versi perbaikan (tanpa risk_score)
-├── dataset_stunting_ml_1000.csv                 # Dataset utama (1000 data balita)
-├── generate_preprocessors.py                    # Script utilitas untuk generate preprocessors
-├── requirements.txt                             # Daftar dependensi library Python
-└── README.md                                    # Dokumentasi proyek ini
-
+├── stunting_ml_analysis_fixed_no_leakage.ipynb
+├── main.py
+├── stunting_model_fix_no_leakage.pkl
+├── dataset_stunting_ml_1000.csv
+├── generate_preprocessors.py
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## 📄 Deskripsi File & Perubahan Penting
+## Project Workflow
 
-### 1. `stunting_ml_analysis_fixed_no_leakage.ipynb`
-Jupyter Notebook utama yang berisi seluruh alur analisis data, pembuktian kebocoran data, dan pelatihan ulang model.
-
-**Perbaikan Utama dibanding Versi Mentor:**
-- **Penghapusan Fitur `risk_score` (Drop):** Berdasarkan uji korelasi formal, kolom `risk_score` terbukti merupakan *Data Leakage (Target Proxy)* yang merusak generalisasi model. Fitur ini dihapus agar model murni belajar dari data riil lapangan.
-- **Uji Korelasi Formal:** Menambahkan visualisasi korelasi (Matriks Korelasi Pearson) untuk membuktikan secara ilmiah mengapa `risk_score` harus dibuang.
-- **Perluasan Eksperimen Model:** Menguji lebih banyak algoritma klasifikasi (termasuk *Logistic Regression*, *Random Forest*, *Gradient Boosting*, dll.) dengan penanganan *imbalance data* yang lebih matang.
-- **Evaluasi Berfokus pada Recall:** Model terbaik dipilih berdasarkan nilai *Recall* tertinggi untuk meminimalkan *False Negative* (balita stunting yang salah terprediksi sebagai normal).
+```
+Dataset
+   │
+   ▼
+Exploratory Data Analysis
+   │
+   ▼
+Data Leakage Investigation
+   │
+   ▼
+Feature Selection
+(Remove risk_score)
+   │
+   ▼
+Data Preprocessing
+(Label Encoding + Standard Scaling)
+   │
+   ▼
+Model Training
+(Logistic Regression, Random Forest,
+Gradient Boosting, XGBoost,
+LightGBM, KNN)
+   │
+   ▼
+Hyperparameter Tuning
+(GridSearchCV & RandomizedSearchCV)
+   │
+   ▼
+Model Evaluation
+   │
+   ▼
+Best Model Selection
+   │
+   ▼
+FastAPI Deployment
+   │
+   ▼
+Laravel Integration
+```
 
 ---
 
-### 2. `main.py`
-Server API berbasis **FastAPI** yang bertugas menerima data dari aplikasi web Laravel, melakukan prapemrosesan, dan mengembalikan hasil prediksi stunting.
+## Dataset
 
-**Cara kerja:**
-1. Saat server dijalankan, model baru `stunting_model_fix_no_leakage.pkl` di-load ke memori.
-2. `LabelEncoder` dan `StandardScaler` di-*fit* ulang secara otomatis menggunakan `dataset_stunting_ml_1000.csv` (dengan kolom `risk_score` yang sudah diabaikan).
-3. Saat menerima request `POST /predict`, data diubah melalui *pipeline* preprocessing (encoding → scaling → pengurutan kolom) tanpa membutuhkan input `risk_score`.
+The dataset contains **1,000 toddler records** consisting of demographic, nutritional, health, and environmental information.
 
-**Endpoint yang tersedia:**
+### Features
 
-| Method | Endpoint  | Deskripsi                               |
-|--------|-----------|-----------------------------------------|
-| `GET`  | `/`       | Cek status server (health check)        |
-| `POST` | `/predict`| Mengirim data balita, mendapat prediksi |
+| Feature | Description |
+|----------|-------------|
+| usia_bulan | Age (months) |
+| jenis_kelamin | Gender |
+| berat_lahir_kg | Birth weight |
+| panjang_lahir_cm | Birth length |
+| asi_eksklusif | Exclusive breastfeeding |
+| protein_harian | Daily protein intake |
+| frekuensi_makan | Daily meal frequency |
+| tinggi_ibu_cm | Mother's height |
+| riwayat_diare | History of diarrhea |
+| pendapatan_keluarga | Family income |
+| sanitasi_layak | Access to proper sanitation |
+| imunisasi_lengkap | Complete immunization |
+| status_stunting | Target variable |
 
-**Contoh request body untuk `POST /predict` (Tanpa `risk_score`):**
+> The `risk_score` column was intentionally excluded from the final model because it was identified as a potential source of data leakage.
+
+---
+
+## Model Development
+
+The notebook includes:
+
+- Exploratory Data Analysis (EDA)
+- Correlation Analysis
+- Data Leakage Investigation
+- Data Preprocessing
+- Feature Selection
+- Hyperparameter Tuning
+- Cross Validation
+- Model Comparison
+- Final Model Selection
+- Model Evaluation
+
+The final model was selected based on classification performance after all experiments had been completed.
+
+---
+
+## API
+
+The prediction service is implemented using **FastAPI**.
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/` | Health Check |
+| POST | `/predict` | Predict stunting status |
+
+### Example Request
+
 ```json
 {
-  "usia_bulan": 24,
-  "jenis_kelamin": "L",
-  "berat_lahir_kg": 3.2,
-  "panjang_lahir_cm": 50.0,
-  "asi_eksklusif": "Ya",
-  "protein_harian": 45.0,
-  "frekuensi_makan": 4,
-  "tinggi_ibu_cm": 160.0,
-  "riwayat_diare": 0,
-  "pendapatan_keluarga": 6000000.0,
-  "sanitasi_layak": "Ya",
-  "imunisasi_lengkap": "Ya"
+  "usia_bulan":24,
+  "jenis_kelamin":"L",
+  "berat_lahir_kg":3.2,
+  "panjang_lahir_cm":50,
+  "asi_eksklusif":"Ya",
+  "protein_harian":45,
+  "frekuensi_makan":4,
+  "tinggi_ibu_cm":160,
+  "riwayat_diare":0,
+  "pendapatan_keluarga":6000000,
+  "sanitasi_layak":"Ya",
+  "imunisasi_lengkap":"Ya"
 }
-
 ```
 
-**Contoh response:**
+### Example Response
 
 ```json
 {
-  "status": "success",
-  "prediction_code": 0,
-  "prediction_status": "Tidak Stunting",
-  "probability_stunting_percent": 12.45
+    "status":"success",
+    "prediction_code":0,
+    "prediction_status":"Tidak Stunting",
+    "probability_stunting_percent":12.45
 }
-
 ```
 
 ---
 
-### 3. `stunting_model_fix_no_leakage.pkl`
+## Running the Project
 
-File biner model final (Logistic Regression / Random Forest hasil revisi) yang disimpan menggunakan library `joblib`/`pickle`. Model ini **sangat stabil** karena memprediksi murni berdasarkan kondisi fisik, asupan gizi, dan riwayat kesehatan balita yang sebenarnya.
-
----
-
-### 4. `dataset_stunting_ml_1000.csv`
-
-Dataset yang digunakan untuk melatih model. Kolom `risk_score` diabaikan sepenuhnya selama proses pelatihan model revisi demi integritas data.
-
-**Kolom Fitur yang Digunakan:**
-
-| Kolom | Tipe | Deskripsi |
-| --- | --- | --- |
-| `id` | int | ID unik (diabaikan saat training) |
-| `usia_bulan` | int | Usia balita dalam bulan |
-| `jenis_kelamin` | string | Jenis kelamin: `L` (Laki-laki) / `P` (Perempuan) |
-| `berat_lahir_kg` | float | Berat badan lahir (kilogram) |
-| `panjang_lahir_cm` | float | Panjang badan lahir (sentimeter) |
-| `asi_eksklusif` | string | Riwayat ASI eksklusif: `Ya` / `Tidak` |
-| `protein_harian` | float | Asupan protein harian (gram) |
-| `frekuensi_makan` | int | Frekuensi makan per hari |
-| `tinggi_ibu_cm` | float | Tinggi badan ibu (sentimeter) |
-| `riwayat_diare` | int | Frekuensi kejadian diare |
-| `pendapatan_keluarga` | float | Pendapatan keluarga per bulan (Rupiah) |
-| `sanitasi_layak` | string | Akses sanitasi layak: `Ya` / `Tidak` |
-| `imunisasi_lengkap` | string | Status imunisasi lengkap: `Ya` / `Tidak` |
-| `status_stunting` | int | **Target:** `1` = Stunting, `0` = Tidak Stunting |
-
----
-
-## 🚀 Cara Instalasi dan Menjalankan API
-
-### 1. Instalasi Dependensi
-
-Arahkan terminal ke dalam folder `ML/` dan jalankan perintah:
+Install dependencies
 
 ```bash
 pip install -r requirements.txt
-
 ```
 
-### 2. Menjalankan Server
-
-Jalankan perintah berikut untuk mengaktifkan API backend pada port `8001`:
+Run FastAPI
 
 ```bash
 uvicorn main:app --reload --port 8001
-
 ```
 
-Server berjalan aktif di: **`http://127.0.0.1:8001`** Akses Swagger UI (Dokumentasi API interaktif) di: **`http://127.0.0.1:8001/docs`**
+Swagger Documentation
+
+```
+http://127.0.0.1:8001/docs
+```
 
 ---
 
-## 🔗 Integrasi dengan Laravel (Tanpa `risk_score`)
+## Laravel Integration
 
-Pada Controller Laravel Anda, gunakan **HTTP Client** bawaan untuk menembak API FastAPI. Perhatikan bahwa Anda **tidak perlu mengirim parameter `risk_score**` karena model baru sudah mampu memprediksi dengan akurat tanpa kolom tersebut.
+Example request using Laravel HTTP Client.
 
 ```php
-use Illuminate\Support\Facades\Http;
+$response = Http::timeout(10)->post(
+    'http://127.0.0.1:8001/predict',
+    [
+        'usia_bulan' => 24,
+        'jenis_kelamin' => 'L',
+        'berat_lahir_kg' => 3.2,
+        'panjang_lahir_cm' => 50,
+        'asi_eksklusif' => 'Ya',
+        'protein_harian' => 45,
+        'frekuensi_makan' => 4,
+        'tinggi_ibu_cm' => 160,
+        'riwayat_diare' => 0,
+        'pendapatan_keluarga' => 6000000,
+        'sanitasi_layak' => 'Ya',
+        'imunisasi_lengkap' => 'Ya'
+    ]
+);
 
-$response = Http::timeout(10)->post('[http://127.0.0.1:8001/predict](http://127.0.0.1:8001/predict)', [
-    'usia_bulan'          => 24,
-    'jenis_kelamin'       => 'L',
-    'berat_lahir_kg'      => 3.2,
-    'panjang_lahir_cm'    => 50.0,
-    'asi_eksklusif'       => 'Ya',
-    'protein_harian'      => 45.0,
-    'frekuensi_makan'     => 4,
-    'tinggi_ibu_cm'       => 160.0,
-    'riwayat_diare'       => 0,
-    'pendapatan_keluarga' => 6000000.0,
-    'sanitasi_layak'      => 'Ya',
-    'imunisasi_lengkap'   => 'Ya',
-]);
-
-$result =$response->json();
-// Hasil prediksi:
-// $result['prediction_status'] => "Tidak Stunting"
-
+$result = $response->json();
 ```
 
 ---
 
-## 🏗️ Arsitektur Sistem Baru (No-Leakage)
+## Documentation
+
+A detailed report describing the development process, data leakage investigation, model comparison, and evaluation is available in:
 
 ```
-[ Form Input Kader di Laravel ]
-               |
-               | POST (Data fisik & gizi riil balita)
-               ▼
-[ Laravel Controller ]
-               |
-               | Http::post (Mengirim 12 fitur bersih ke port 8001)
-               ▼
-[ FastAPI Server (main.py) ]
-               |
-               | 1. Encoding & Scaling otomatis (Tanpa risk_score)
-               | 2. Prediksi jujur via stunting_model_fix_no_leakage.pkl
-               ▼
-[ Response JSON (Akurat & Stabil) ] ──▶ [ Ditampilkan ke Layar Laravel ]
-
+docs/
+└── MODEL_IMPROVEMENT_REPORT.pdf
 ```
 
-```
+---
 
-```
+## Technologies
+
+- Python
+- Scikit-Learn
+- XGBoost
+- LightGBM
+- FastAPI
+- Laravel
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
+
+---
+
+## License
+This project was developed for educational purposes and machine learning experimentation.
