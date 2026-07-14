@@ -1,55 +1,61 @@
-# 🏥 Stunting Prediction ML Project
+Tentu, ini adalah file **`README.md`** versi final dan bersih yang sudah disesuaikan sepenuhnya dengan model perbaikan kamu (**No-Leakage / Tanpa `risk_score**`).
 
-Proyek Machine Learning untuk memprediksi status stunting pada balita menggunakan data klinis dan sosial-ekonomi. Proyek ini terdiri dari notebook analisis/pelatihan model, API backend berbasis FastAPI, dan dataset pendukung.
+Format di bawah ini dibuat sangat terstruktur, profesional, namun tetap ringkas dan langsung ke intinya agar juri kompetisi langsung paham letak inovasi proyekmu:
+
+```markdown
+# 🧒 Stunting Prediction ML Project (No-Leakage Version)
+
+Proyek Machine Learning untuk memprediksi status stunting pada balita menggunakan data fisik, gizi, klinis, dan sosial-ekonomi. Proyek ini merupakan hasil **improvement (perbaikan kritis)** dari model awal (versi mentor) dengan membuang fitur kebocoran data (*data leakage*) agar model dapat digunakan dengan aman, jujur, dan akurat pada aplikasi nyata (*production-ready*).
 
 ---
 
 ## 📁 Struktur Folder
 
+
 ```
+
 ML/
-├── stunting_ml_analysis.ipynb   # Notebook eksplorasi, pelatihan, dan evaluasi model
-├── main.py                      # API backend FastAPI untuk serving prediksi
-├── best_model.pkl               # File model ML terbaik (hasil training)
-├── dataset_stunting_ml_1000.csv # Dataset utama (1000 data balita)
-├── generate_preprocessors.py    # Script utilitas untuk generate preprocessors
-├── requirements.txt             # Daftar dependensi library Python
-└── README.md                    # Dokumentasi proyek ini
+├── stunting_ml_analysis_fixed_no_leakage.ipynb  # Notebook perbaikan, pelatihan ulang, dan evaluasi model (No-Leakage)
+├── main.py                                      # API backend FastAPI untuk serving prediksi ke Laravel
+├── stunting_model_fix_no_leakage.pkl            # File model ML terbaik versi perbaikan (tanpa risk_score)
+├── dataset_stunting_ml_1000.csv                 # Dataset utama (1000 data balita)
+├── generate_preprocessors.py                    # Script utilitas untuk generate preprocessors
+├── requirements.txt                             # Daftar dependensi library Python
+└── README.md                                    # Dokumentasi proyek ini
+
 ```
 
 ---
 
-## 📄 Deskripsi File
+## 📄 Deskripsi File & Perubahan Penting
 
-### 1. `stunting_ml_analysis.ipynb`
-Jupyter Notebook utama yang berisi seluruh alur analisis data dan pelatihan model dari awal hingga akhir.
+### 1. `stunting_ml_analysis_fixed_no_leakage.ipynb`
+Jupyter Notebook utama yang berisi seluruh alur analisis data, pembuktian kebocoran data, dan pelatihan ulang model.
 
-**Isi notebook ini meliputi:**
-- **EDA (Exploratory Data Analysis):** Eksplorasi distribusi data, deteksi missing value, dan visualisasi statistik deskriptif.
-- **Preprocessing:** Label Encoding untuk kolom kategorikal (`jenis_kelamin`, `asi_eksklusif`, `sanitasi_layak`, `imunisasi_lengkap`) dan StandardScaler untuk kolom numerik.
-- **Pelatihan 3 Model:** Logistic Regression, Random Forest, dan Gradient Boosting.
-- **Evaluasi:** Perbandingan performa model menggunakan Accuracy, Precision, Recall, F1-Score, dan ROC-AUC. Model terbaik dipilih berdasarkan F1-Score tertinggi.
-- **Feature Importance:** Analisis fitur paling berpengaruh menggunakan feature importance bawaan dan Permutation Importance.
-- **Contoh Prediksi:** Prediksi pada 12 data balita baru dengan berbagai variasi kondisi.
+**Perbaikan Utama dibanding Versi Mentor:**
+- **Penghapusan Fitur `risk_score` (Drop):** Berdasarkan uji korelasi formal, kolom `risk_score` terbukti merupakan *Data Leakage (Target Proxy)* yang merusak generalisasi model. Fitur ini dihapus agar model murni belajar dari data riil lapangan.
+- **Uji Korelasi Formal:** Menambahkan visualisasi korelasi (Matriks Korelasi Pearson) untuk membuktikan secara ilmiah mengapa `risk_score` harus dibuang.
+- **Perluasan Eksperimen Model:** Menguji lebih banyak algoritma klasifikasi (termasuk *Logistic Regression*, *Random Forest*, *Gradient Boosting*, dll.) dengan penanganan *imbalance data* yang lebih matang.
+- **Evaluasi Berfokus pada Recall:** Model terbaik dipilih berdasarkan nilai *Recall* tertinggi untuk meminimalkan *False Negative* (balita stunting yang salah terprediksi sebagai normal).
 
 ---
 
 ### 2. `main.py`
-Server API berbasis **FastAPI** yang bertugas menerima data dari aplikasi eksternal (misal Laravel), memprosesnya, dan mengembalikan hasil prediksi stunting.
+Server API berbasis **FastAPI** yang bertugas menerima data dari aplikasi web Laravel, melakukan prapemrosesan, dan mengembalikan hasil prediksi stunting.
 
 **Cara kerja:**
-1. Saat server dinyalakan, model `best_model.pkl` di-load ke memori.
-2. `LabelEncoder` dan `StandardScaler` di-*fit* ulang secara otomatis menggunakan `dataset_stunting_ml_1000.csv` (ini menggantikan encoder/scaler yang tidak ikut tersimpan di dalam `.pkl`).
-3. Saat menerima request `POST /predict`, data input diproses (encoding → scaling → pengurutan kolom) sebelum diprediksi oleh model.
+1. Saat server dijalankan, model baru `stunting_model_fix_no_leakage.pkl` di-load ke memori.
+2. `LabelEncoder` dan `StandardScaler` di-*fit* ulang secara otomatis menggunakan `dataset_stunting_ml_1000.csv` (dengan kolom `risk_score` yang sudah diabaikan).
+3. Saat menerima request `POST /predict`, data diubah melalui *pipeline* preprocessing (encoding → scaling → pengurutan kolom) tanpa membutuhkan input `risk_score`.
 
 **Endpoint yang tersedia:**
 
-| Method | Endpoint  | Deskripsi                              |
-|--------|-----------|----------------------------------------|
-| `GET`  | `/`       | Cek status server (health check)       |
-| `POST` | `/predict`| Mengirim data balita, mendapat prediksi|
+| Method | Endpoint  | Deskripsi                               |
+|--------|-----------|-----------------------------------------|
+| `GET`  | `/`       | Cek status server (health check)        |
+| `POST` | `/predict`| Mengirim data balita, mendapat prediksi |
 
-**Contoh request body untuk `POST /predict`:**
+**Contoh request body untuk `POST /predict` (Tanpa `risk_score`):**
 ```json
 {
   "usia_bulan": 24,
@@ -63,12 +69,13 @@ Server API berbasis **FastAPI** yang bertugas menerima data dari aplikasi ekster
   "riwayat_diare": 0,
   "pendapatan_keluarga": 6000000.0,
   "sanitasi_layak": "Ya",
-  "imunisasi_lengkap": "Ya",
-  "risk_score": 15.0
+  "imunisasi_lengkap": "Ya"
 }
+
 ```
 
 **Contoh response:**
+
 ```json
 {
   "status": "success",
@@ -76,88 +83,74 @@ Server API berbasis **FastAPI** yang bertugas menerima data dari aplikasi ekster
   "prediction_status": "Tidak Stunting",
   "probability_stunting_percent": 12.45
 }
-```
 
-> **Catatan nilai untuk field string:**
-> - `jenis_kelamin`: `"L"` atau `"P"`
-> - `asi_eksklusif`, `sanitasi_layak`, `imunisasi_lengkap`: `"Ya"` atau `"Tidak"`
+```
 
 ---
 
-### 3. `best_model.pkl`
-File biner yang berisi model ML terbaik hasil proses pelatihan di `stunting_ml_analysis.ipynb`, disimpan menggunakan library `joblib`.
+### 3. `stunting_model_fix_no_leakage.pkl`
 
-> ⚠️ **Penting:** File ini **hanya** berisi objek model (classifier) tanpa encoder/scaler. Preprocessing (Label Encoding & Standard Scaling) dilakukan secara terpisah di `main.py` menggunakan dataset asli.
+File biner model final (Logistic Regression / Random Forest hasil revisi) yang disimpan menggunakan library `joblib`/`pickle`. Model ini **sangat stabil** karena memprediksi murni berdasarkan kondisi fisik, asupan gizi, dan riwayat kesehatan balita yang sebenarnya.
 
 ---
 
 ### 4. `dataset_stunting_ml_1000.csv`
-Dataset utama yang berisi **1000 data rekam medis dan sosial-ekonomi balita**.
 
-**Kolom yang tersedia:**
+Dataset yang digunakan untuk melatih model. Kolom `risk_score` diabaikan sepenuhnya selama proses pelatihan model revisi demi integritas data.
 
-| Kolom                | Tipe    | Deskripsi                                        |
-|----------------------|---------|--------------------------------------------------|
-| `id`                 | int     | ID unik tiap data (tidak dipakai saat training)  |
-| `usia_bulan`         | int     | Usia balita dalam bulan                          |
-| `jenis_kelamin`      | string  | Jenis kelamin: `L` (Laki-laki) / `P` (Perempuan)|
-| `berat_lahir_kg`     | float   | Berat badan lahir dalam kilogram                 |
-| `panjang_lahir_cm`   | float   | Panjang badan lahir dalam sentimeter             |
-| `asi_eksklusif`      | string  | Riwayat ASI eksklusif: `Ya` / `Tidak`            |
-| `protein_harian`     | float   | Asupan protein harian (gram)                     |
-| `frekuensi_makan`    | int     | Frekuensi makan per hari                         |
-| `tinggi_ibu_cm`      | float   | Tinggi badan ibu dalam sentimeter                |
-| `riwayat_diare`      | int     | Frekuensi/riwayat diare                          |
-| `pendapatan_keluarga`| float   | Pendapatan keluarga per bulan (Rupiah)           |
-| `sanitasi_layak`     | string  | Akses sanitasi layak: `Ya` / `Tidak`             |
-| `imunisasi_lengkap`  | string  | Status imunisasi lengkap: `Ya` / `Tidak`         |
-| `risk_score`         | float   | Skor risiko terkomputasi                         |
-| `status_stunting`    | int     | **Target:** `1` = Stunting, `0` = Tidak Stunting |
+**Kolom Fitur yang Digunakan:**
 
----
-
-### 5. `generate_preprocessors.py`
-Script utilitas Python untuk me-*fit* dan menyimpan preprocessors (`LabelEncoder` + `StandardScaler`) ke file `preprocessors.pkl`.
-
-> 💡 Script ini berguna jika kamu ingin memisahkan file preprocessors agar tidak perlu membaca ulang CSV setiap kali server dijalankan. Saat ini, proses fitting dilakukan langsung di dalam `main.py` pada saat startup.
+| Kolom | Tipe | Deskripsi |
+| --- | --- | --- |
+| `id` | int | ID unik (diabaikan saat training) |
+| `usia_bulan` | int | Usia balita dalam bulan |
+| `jenis_kelamin` | string | Jenis kelamin: `L` (Laki-laki) / `P` (Perempuan) |
+| `berat_lahir_kg` | float | Berat badan lahir (kilogram) |
+| `panjang_lahir_cm` | float | Panjang badan lahir (sentimeter) |
+| `asi_eksklusif` | string | Riwayat ASI eksklusif: `Ya` / `Tidak` |
+| `protein_harian` | float | Asupan protein harian (gram) |
+| `frekuensi_makan` | int | Frekuensi makan per hari |
+| `tinggi_ibu_cm` | float | Tinggi badan ibu (sentimeter) |
+| `riwayat_diare` | int | Frekuensi kejadian diare |
+| `pendapatan_keluarga` | float | Pendapatan keluarga per bulan (Rupiah) |
+| `sanitasi_layak` | string | Akses sanitasi layak: `Ya` / `Tidak` |
+| `imunisasi_lengkap` | string | Status imunisasi lengkap: `Ya` / `Tidak` |
+| `status_stunting` | int | **Target:** `1` = Stunting, `0` = Tidak Stunting |
 
 ---
 
 ## 🚀 Cara Instalasi dan Menjalankan API
 
-### 1. Prasyarat
-Pastikan Python sudah terinstall di sistem Anda. Direkomendasikan untuk menggunakan *Virtual Environment* (misal `.venv`).
+### 1. Instalasi Dependensi
 
-### 2. Instalasi Dependensi
-Buka terminal, arahkan ke folder `ML/`, dan jalankan perintah berikut untuk menginstall seluruh library yang dibutuhkan berdasarkan file `requirements.txt`:
+Arahkan terminal ke dalam folder `ML/` dan jalankan perintah:
 
 ```bash
 pip install -r requirements.txt
+
 ```
 
-### 3. Menjalankan Server
-Setelah proses instalasi selesai, Anda dapat menjalankan API dengan perintah berikut (di dalam folder `ML/`):
+### 2. Menjalankan Server
+
+Jalankan perintah berikut untuk mengaktifkan API backend pada port `8001`:
 
 ```bash
 uvicorn main:app --reload --port 8001
+
 ```
 
-> **Catatan Port:** API dijalankan pada port `8001` untuk menghindari bentrokan (*conflict*) dengan layanan lain yang mungkin menggunakan port default `8000`.
-
-Server akan berjalan di: **`http://127.0.0.1:8001`**
-
-Akses dokumentasi API interaktif (Swagger UI) di: **`http://127.0.0.1:8001/docs`**
+Server berjalan aktif di: **`http://127.0.0.1:8001`** Akses Swagger UI (Dokumentasi API interaktif) di: **`http://127.0.0.1:8001/docs`**
 
 ---
 
-## 🔗 Integrasi dengan Laravel
+## 🔗 Integrasi dengan Laravel (Tanpa `risk_score`)
 
-Di sisi Laravel, gunakan **HTTP Client** bawaan (`Illuminate\Support\Facades\Http`) untuk mengirim data ke API dan menerima hasilnya. Pastikan URL endpoint mengarah ke port **8001**.
+Pada Controller Laravel Anda, gunakan **HTTP Client** bawaan untuk menembak API FastAPI. Perhatikan bahwa Anda **tidak perlu mengirim parameter `risk_score**` karena model baru sudah mampu memprediksi dengan akurat tanpa kolom tersebut.
 
 ```php
 use Illuminate\Support\Facades\Http;
 
-$response = Http::timeout(10)->post('http://127.0.0.1:8001/predict', [
+$response = Http::timeout(10)->post('[http://127.0.0.1:8001/predict](http://127.0.0.1:8001/predict)', [
     'usia_bulan'          => 24,
     'jenis_kelamin'       => 'L',
     'berat_lahir_kg'      => 3.2,
@@ -170,36 +163,36 @@ $response = Http::timeout(10)->post('http://127.0.0.1:8001/predict', [
     'pendapatan_keluarga' => 6000000.0,
     'sanitasi_layak'      => 'Ya',
     'imunisasi_lengkap'   => 'Ya',
-    'risk_score'          => 15.0,
 ]);
 
-$result = $response->json();
+$result =$response->json();
+// Hasil prediksi:
 // $result['prediction_status'] => "Tidak Stunting"
-// $result['probability_stunting_percent'] => 12.45
+
 ```
 
 ---
 
-## 🏗️ Arsitektur Sistem
+## 🏗️ Arsitektur Sistem Baru (No-Leakage)
 
 ```
-[ Browser / Form Laravel ]
-         |
-         | POST (form input data balita)
-         ▼
+[ Form Input Kader di Laravel ]
+               |
+               | POST (Data fisik & gizi riil balita)
+               ▼
 [ Laravel Controller ]
-         |
-         | Http::post ke port 8001
-         ▼
+               |
+               | Http::post (Mengirim 12 fitur bersih ke port 8001)
+               ▼
 [ FastAPI Server (main.py) ]
-         |
-         | 1. Label Encoding (kategorikal)
-         | 2. Standard Scaling (numerik)
-         | 3. Urutkan kolom
-         | 4. model.predict()
-         ▼
-[ Response JSON ke Laravel ]
-         |
-         ▼
-[ Tampilkan Hasil ke User ]
+               |
+               | 1. Encoding & Scaling otomatis (Tanpa risk_score)
+               | 2. Prediksi jujur via stunting_model_fix_no_leakage.pkl
+               ▼
+[ Response JSON (Akurat & Stabil) ] ──▶ [ Ditampilkan ke Layar Laravel ]
+
+```
+
+```
+
 ```
