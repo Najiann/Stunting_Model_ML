@@ -14,6 +14,38 @@ The project is an improved version of the baseline model by addressing a critica
 
 ---
 
+## Related Repository
+
+This repository focuses on the **Machine Learning model** and **FastAPI prediction service**.
+
+The complete Laravel web application that integrates this model is available at:
+
+**Stunting Prediction (Laravel Web Application)**
+
+https://github.com/Najiann/Stunting_Prediction
+
+---
+
+## Disclaimer
+
+This project was developed as part of a personal learning and model improvement process based on the baseline project provided during the Dev Weekend program.
+
+During development, the author utilized **Artificial Intelligence (AI)** tools, including **ChatGPT**, as a **development assistant** to support activities such as:
+
+- brainstorming solutions
+- understanding Machine Learning concepts
+- debugging
+- code review
+- implementation suggestions
+- documentation writing
+- improving code structure and readability
+
+All data analysis, data leakage investigation, feature engineering, model selection, hyperparameter tuning, implementation, testing, evaluation, deployment, and final technical decisions were carried out, reviewed, and validated by the author.
+
+AI was used solely as a development assistant and learning aid, **not as a replacement for the developer**.
+
+---
+
 ## Model Improvements
 
 Compared to the baseline model, the following improvements were implemented:
@@ -48,7 +80,7 @@ ML/
 
 ## Project Workflow
 
-```
+```text
 Dataset
    │
    ▼
@@ -112,7 +144,7 @@ The dataset contains **1,000 toddler records** consisting of demographic, nutrit
 | imunisasi_lengkap | Complete immunization |
 | status_stunting | Target variable |
 
-> The `risk_score` column was intentionally excluded from the final model because it was identified as a potential source of data leakage.
+> The `risk_score` feature was intentionally removed from the final model because it was identified as a potential source of data leakage.
 
 ---
 
@@ -123,15 +155,16 @@ The notebook includes:
 - Exploratory Data Analysis (EDA)
 - Correlation Analysis
 - Data Leakage Investigation
-- Data Preprocessing
 - Feature Selection
+- Data Preprocessing
+- Model Comparison
 - Hyperparameter Tuning
 - Cross Validation
-- Model Comparison
+- SMOTE Experiment
 - Final Model Selection
 - Model Evaluation
 
-The final model was selected based on classification performance after all experiments had been completed.
+The final model was selected after comparing all experiments using multiple evaluation metrics, with particular attention to Recall and F1-Score for stunting screening.
 
 ---
 
@@ -150,18 +183,18 @@ The prediction service is implemented using **FastAPI**.
 
 ```json
 {
-  "usia_bulan":24,
-  "jenis_kelamin":"L",
-  "berat_lahir_kg":3.2,
-  "panjang_lahir_cm":50,
-  "asi_eksklusif":"Ya",
-  "protein_harian":45,
-  "frekuensi_makan":4,
-  "tinggi_ibu_cm":160,
-  "riwayat_diare":0,
-  "pendapatan_keluarga":6000000,
-  "sanitasi_layak":"Ya",
-  "imunisasi_lengkap":"Ya"
+  "usia_bulan": 24,
+  "jenis_kelamin": "L",
+  "berat_lahir_kg": 3.2,
+  "panjang_lahir_cm": 50,
+  "asi_eksklusif": "Ya",
+  "protein_harian": 45,
+  "frekuensi_makan": 4,
+  "tinggi_ibu_cm": 160,
+  "riwayat_diare": 0,
+  "pendapatan_keluarga": 6000000,
+  "sanitasi_layak": "Ya",
+  "imunisasi_lengkap": "Ya"
 }
 ```
 
@@ -169,10 +202,10 @@ The prediction service is implemented using **FastAPI**.
 
 ```json
 {
-    "status":"success",
-    "prediction_code":0,
-    "prediction_status":"Tidak Stunting",
-    "probability_stunting_percent":12.45
+  "status": "success",
+  "prediction_code": 0,
+  "prediction_status": "Tidak Stunting",
+  "probability_stunting_percent": 12.45
 }
 ```
 
@@ -180,21 +213,21 @@ The prediction service is implemented using **FastAPI**.
 
 ## Running the Project
 
-Install dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run FastAPI
+Run the FastAPI server:
 
 ```bash
 uvicorn main:app --reload --port 8001
 ```
 
-Swagger Documentation
+Swagger Documentation:
 
-```
+```text
 http://127.0.0.1:8001/docs
 ```
 
@@ -230,9 +263,9 @@ $result = $response->json();
 
 ## Documentation
 
-A detailed report describing the development process, data leakage investigation, model comparison, and evaluation is available in:
+A detailed report describing the complete model development process, data leakage investigation, model comparison, and evaluation is available in:
 
-```
+```text
 docs/
 └── MODEL_IMPROVEMENT_REPORT.pdf
 ```
@@ -242,17 +275,18 @@ docs/
 ## Technologies
 
 - Python
+- FastAPI
 - Scikit-Learn
 - XGBoost
 - LightGBM
-- FastAPI
-- Laravel
 - Pandas
 - NumPy
 - Matplotlib
 - Seaborn
+- Joblib
 
 ---
 
 ## License
+
 This project was developed for educational purposes and machine learning experimentation.
